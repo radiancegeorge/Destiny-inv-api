@@ -85,8 +85,8 @@ export const newInvestment = expressAsyncHandler(async (req, res) => {
     );
 
     res.send(newTransaction);
-    await transaction.rollback();
-    // await transaction.commit();
+
+    await transaction.commit();
   } catch (err) {
     await transaction.rollback();
     throw { statusCode: 400, error: err };
