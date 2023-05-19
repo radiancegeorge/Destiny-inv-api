@@ -7,7 +7,7 @@ const env = process.env.NODE_ENV || "development";
 const config = require(__dirname + "/../config/config.ts")[env];
 
 interface Attributes {
-  [key: string]: string;
+  [key: string]: any;
 }
 
 export interface M extends ModelStatic<Model<Attributes>> {

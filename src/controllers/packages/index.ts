@@ -56,6 +56,7 @@ export const newInvestment = expressAsyncHandler(async (req, res) => {
       include: {
         model: models.packages,
       },
+      transaction,
     });
 
     const { package: pkg }: { package?: any } = coupon!.dataValues;
@@ -73,7 +74,7 @@ export const newInvestment = expressAsyncHandler(async (req, res) => {
       { transaction }
     );
     // console.log(newUserPkg);
-    await (coupon as any).update({ isRedeemed: true }, { transaction });
+    await coupon?.update({ isRedeemed: true }, { transaction });
     //create transactions
     const newTransaction = await models.transactions.create(
       {
@@ -93,4 +94,69 @@ export const newInvestment = expressAsyncHandler(async (req, res) => {
   }
 });
 
-export const renewInvestment = expressAsyncHandler(async (req, res) => {});
+export const renewInvestment = expressAsyncHandler(async (req, res) => {
+  const { couponCode, userPackageId } = await validationResult(req);
+  const { id } = (req as any).user;
+  const t = await db.sequelize.transaction();
+  try {
+    const coupon = await models.coupons.findOne({
+      where: {
+        code: couponCode,
+        isRedeemed: false,
+      },
+      include: {
+        model: models.packages,
+      },
+      transaction: t,
+    });
+    const userPackage = await models.userPackages.findOne({
+      where: {
+        id: userPackageId,
+      },
+      include: {
+        model: models.packages,
+      },
+    });
+    //check if package has a renewed status and disallow
+    if (userPackage?.dataValues.status === "renewed")
+      throw { statusCode: 403, message: "Package was recently renewed!" };
+
+    if (
+      Number((coupon?.dataValues.package as any).investmentAmount) <
+      Number((userPackage?.dataValues.package as any).investmentAmount)
+    )
+      throw {
+        statusCode: 403,
+        message:
+          "Renewal can only be the same or greater than previous package!",
+      };
+    //might need to add validations down here to control time of renewal
+    //create transaction
+    const newTransaction = await models.transactions.create(
+      {
+        amount: (coupon?.dataValues.package as any).investmentAmount,
+        userPackageId: userPackage?.dataValues.id as string,
+        userId: userPackage?.dataValues.userId,
+      },
+      { transaction: t }
+    );
+    //update user package
+    await userPackage?.update(
+      {
+        status: "renewed",
+        couponId: coupon?.dataValues.id,
+        packageId: (coupon?.dataValues.package as any).id,
+        amount: (coupon?.dataValues.package as any).investmentAmount,
+      },
+      { transaction: t }
+    );
+    //update coupon
+    await coupon!.update({ isRedeemed: true }, { transaction: t });
+
+    res.send(newTransaction);
+    await t.commit();
+  } catch (error) {
+    await t.rollback();
+    throw { statusCode: 400, error };
+  }
+});

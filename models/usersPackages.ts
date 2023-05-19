@@ -14,6 +14,7 @@ const userPackages = (sequelize: Sequelize, datatypes: typeof DataTypes) => {
   {
     static associate = (model: any) => {
       userPackages.belongsTo(model.coupons);
+      userPackages.belongsTo(model.packages);
     };
     id?: string;
     maturityDate!: Date;
@@ -41,21 +42,18 @@ const userPackages = (sequelize: Sequelize, datatypes: typeof DataTypes) => {
     {
       sequelize,
       tableName: "userPackages",
-      validate: {
-        hasNotExceededMinimumAllowance: async function () {
-          const max = Number(process.env.MAX_USER_PACKAGE);
-          const { userId } = this.dataValues as any;
-          const count = await userPackages.count({
-            where: {
-              userId,
-            },
-          });
-          if (count >= max) throw new Error("minimum package at once reached");
-        },
-      },
     }
   );
-
+  userPackages.beforeCreate("Limit Validation", async (instance) => {
+    const max = Number(process.env.MAX_USER_PACKAGE);
+    const { userId } = instance.dataValues as any;
+    const count = await userPackages.count({
+      where: {
+        userId,
+      },
+    });
+    if (count >= max) throw { message: "minimum package at once reached" };
+  });
   return userPackages;
 };
 
