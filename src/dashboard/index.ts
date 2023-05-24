@@ -62,6 +62,7 @@ const initDashboard = async (app: any) => {
       coupons,
       models.userPackages,
       models.transactions,
+      models.withdrawalRequests,
     ],
     componentLoader,
     // locale: {

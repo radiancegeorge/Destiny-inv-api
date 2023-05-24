@@ -17,6 +17,7 @@ const withdrawals = (sequelize: Sequelize, datatypes: typeof DataTypes) => {
     static associate = (model: any) => {
       withdrawalRequests.belongsTo(model.users);
       withdrawalRequests.belongsTo(model.userPackages);
+      withdrawalRequests.belongsTo(model.transactions);
     };
 
     id!: string;

@@ -4,15 +4,10 @@ import Web3 from "web3";
 import bcrypt from "bcrypt";
 
 export const createAccountValidations = [
-  body([
-    "username",
-    "email",
-    "password",
-    "rePassword",
-    "walletAddress",
-  ]).notEmpty({
+  body(["username", "email", "password", "rePassword"]).notEmpty({
     ignore_whitespace: true,
   }),
+
   body("password").custom((password, { req }) => {
     if (password !== req.body.rePassword)
       throw new Error("passwords must match!");
@@ -30,13 +25,15 @@ export const createAccountValidations = [
     if (!couponCode) throw new Error("Invalid coupon or expired!");
     return true;
   }),
-  body("walletAddress").custom(async (walletAddress) => {
-    if (!Web3.utils.isAddress(walletAddress))
-      throw new Error("Not a wallet address!");
-    if (!Web3.utils.checkAddressChecksum(walletAddress))
-      throw new Error("Invalid wallet address!");
-    return true;
-  }),
+  body("walletAddress")
+    .optional()
+    .custom(async (walletAddress) => {
+      if (!Web3.utils.isAddress(walletAddress))
+        throw new Error("Not a wallet address!");
+      if (!Web3.utils.checkAddressChecksum(walletAddress))
+        throw new Error("Invalid wallet address!");
+      return true;
+    }),
   body("email").isEmail().normalizeEmail(),
 ];
 

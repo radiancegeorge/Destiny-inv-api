@@ -27,3 +27,8 @@ export const PackageRenewalValidation = [
     return true;
   }),
 ];
+
+export const RequestWithdrawalVerification = [
+  param("userPackageId").notEmpty().withMessage("cannot be empty"),
+  body("paymentMethod").notEmpty().withMessage("paymentMethod cannot be empty"),
+];

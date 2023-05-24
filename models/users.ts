@@ -45,7 +45,7 @@ const users = (sequelize: Sequelize, datatypes: typeof DataTypes) => {
       },
       walletAddress: {
         type: datatypes.STRING,
-        allowNull: false,
+        allowNull: true,
         unique: "walletAddress",
       },
     },

@@ -81,6 +81,7 @@ export const newInvestment = expressAsyncHandler(async (req, res) => {
         amount: pkg.investmentAmount,
         userPackageId: newUserPkg.dataValues.id,
         userId: id,
+        packageId: pkg.id,
       },
       { transaction }
     );
@@ -112,6 +113,7 @@ export const renewInvestment = expressAsyncHandler(async (req, res) => {
     const userPackage = await models.userPackages.findOne({
       where: {
         id: userPackageId,
+        userId: id,
       },
       include: {
         model: models.packages,
@@ -137,6 +139,7 @@ export const renewInvestment = expressAsyncHandler(async (req, res) => {
         amount: (coupon?.dataValues.package as any).investmentAmount,
         userPackageId: userPackage?.dataValues.id as string,
         userId: userPackage?.dataValues.userId,
+        packageId: (coupon?.dataValues.package as any).id,
       },
       { transaction: t }
     );
@@ -162,18 +165,35 @@ export const renewInvestment = expressAsyncHandler(async (req, res) => {
 });
 
 export const RequestWithdrawal = expressAsyncHandler(async (req, res) => {
-  const { userPackageId } = await validationResult(req);
+  const { userPackageId, paymentMethod } = await validationResult(req);
   const { id } = (req as any).user;
   const userPackage = await models.userPackages.findOne({
     where: {
       id: userPackageId,
+      userId: id,
+    },
+  });
+
+  //get second to the last transaction on a particular userPackage
+  const transaction = await models.transactions.findOne({
+    where: {
+      userPackageId,
     },
     include: [
       {
         model: models.packages,
       },
     ],
+    offset: 1,
+    order: [["id", "DESC"]],
   });
+  const transactionMaturityDate = new Date(transaction?.dataValues.createdAt);
+  // generate expected mature date
+
+  transactionMaturityDate.setDate(
+    transactionMaturityDate.getDate() +
+      transaction?.dataValues.package.maturityPeriodInDays
+  );
 
   if (!userPackage)
     throw {
@@ -186,12 +206,53 @@ export const RequestWithdrawal = expressAsyncHandler(async (req, res) => {
       message:
         "Withdrawal not available, renew to be able to request withdrawal!",
     };
-  //change this maturity date, it cannot be used in this case, prolly get the transactions then check from when created
-  if (new Date(userPackage.dataValues.maturityDate) < new Date())
+  if (transactionMaturityDate > new Date())
     throw {
       statusCode: 400,
-      message: `Withdrawal not available before ${userPackage.dataValues.maturityDate}`,
+      message: `Withdrawal not available until ${transactionMaturityDate.toUTCString()}`,
     };
 
-  //get second to the last transaction
+  const amount = (transaction?.dataValues.package as any).returnAfterMaturity;
+
+  //create request and notify an email
+  const t = await db.sequelize.transaction();
+  try {
+    const newRequest = await models.withdrawalRequests.create(
+      {
+        userId: id,
+        amount,
+        paymentMethod,
+        transactionId: transaction?.dataValues.id,
+      },
+      { transaction: t }
+    );
+    await userPackage.update({ status: "withdrawn" }, { transaction: t });
+    res.send(newRequest);
+    await t.commit();
+  } catch (err) {
+    await t.rollback();
+    throw { statusCode: 400, err };
+  }
+});
+
+export const getUserRequests = expressAsyncHandler(async (req, res) => {
+  const { id } = (req as any).user;
+  const { limit, page } = await validationResult(req);
+  const offset = (page - 1) * limit;
+  const { count, rows: results } =
+    await models.withdrawalRequests.findAndCountAll({
+      where: {
+        userId: id,
+      },
+      limit,
+      offset,
+      order: [["id", "DESC"]],
+    });
+  res.send({
+    results,
+    limit,
+    page,
+    count,
+    totalPages: Math.ceil(count / limit),
+  });
 });

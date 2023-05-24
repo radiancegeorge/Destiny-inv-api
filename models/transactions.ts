@@ -14,6 +14,9 @@ const transactions = (sequelize: Sequelize, datatypes: typeof DataTypes) => {
     static associate = (model: any) => {
       transactions.belongsTo(model.users);
       transactions.belongsTo(model.userPackages);
+      transactions.belongsTo(model.packages, {
+        foreignKey: { allowNull: false },
+      });
     };
     transactionType!: "investment" | "withdrawal";
     amount!: number;

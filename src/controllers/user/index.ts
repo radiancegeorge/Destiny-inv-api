@@ -47,6 +47,7 @@ export const registerUser = expressAsyncHandler(async (req, res) => {
         userId: newUser.dataValues.id,
         userPackageId: userPkg[0].dataValues.id,
         amount: pkg.investmentAmount,
+        packageId: pkg.id,
       },
       { transaction }
     );
@@ -126,4 +127,11 @@ export const me = expressAsyncHandler(async (req, res) => {
   res.send(data);
 });
 
-//edit account
+//todo
+//password reset
+//change password
+//email token on purchase with smart-contract
+//vendors contact
+//bulk create
+//bulk tick completed transactions
+//add bank details - users
