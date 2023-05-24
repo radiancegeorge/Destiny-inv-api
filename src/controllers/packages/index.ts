@@ -160,3 +160,38 @@ export const renewInvestment = expressAsyncHandler(async (req, res) => {
     throw { statusCode: 400, error };
   }
 });
+
+export const RequestWithdrawal = expressAsyncHandler(async (req, res) => {
+  const { userPackageId } = await validationResult(req);
+  const { id } = (req as any).user;
+  const userPackage = await models.userPackages.findOne({
+    where: {
+      id: userPackageId,
+    },
+    include: [
+      {
+        model: models.packages,
+      },
+    ],
+  });
+
+  if (!userPackage)
+    throw {
+      statusCode: 404,
+      message: "package not found",
+    };
+  if (userPackage.dataValues.status !== "renewed")
+    throw {
+      statusCode: 400,
+      message:
+        "Withdrawal not available, renew to be able to request withdrawal!",
+    };
+  //change this maturity date, it cannot be used in this case, prolly get the transactions then check from when created
+  if (new Date(userPackage.dataValues.maturityDate) < new Date())
+    throw {
+      statusCode: 400,
+      message: `Withdrawal not available before ${userPackage.dataValues.maturityDate}`,
+    };
+
+  //get second to the last transaction
+});

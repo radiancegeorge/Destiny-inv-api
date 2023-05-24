@@ -23,7 +23,6 @@ export const PackageRenewalValidation = [
         isRedeemed: false,
       },
     });
-
     if (!couponCode) throw new Error("Invalid coupon or expired!");
     return true;
   }),
