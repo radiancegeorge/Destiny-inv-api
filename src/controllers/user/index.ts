@@ -180,6 +180,27 @@ export const ChangePassword = expressAsyncHandler(async (req, res) => {
   res.send();
 });
 
+export const UpdateUser = expressAsyncHandler(async (req, res) => {
+  const data = await validationResult(req);
+  const { id } = (req as any).user;
+
+  await models.users.update(data, {
+    where: {
+      id,
+    },
+  });
+
+  const user = await models.users.findOne({
+    where: {
+      id,
+    },
+    attributes: {
+      exclude: ["password", "createdAt", "updatedAt", "deletedAt"],
+    },
+  });
+  res.send(user);
+});
+
 //listener
 (async () => {
   const web3 = new Web3(
@@ -246,7 +267,7 @@ export const ChangePassword = expressAsyncHandler(async (req, res) => {
 })();
 
 //todo
-//email token on purchase with smart-contract
+//payout with smart contract
 //vendors contact
 //bulk create
 //bulk tick completed transactions

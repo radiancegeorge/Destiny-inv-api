@@ -77,3 +77,13 @@ export const ChangePasswordValidation = [
 export const RequestResetPasswordValidation = [
   param("email").isEmail().withMessage("please provide a valid email"),
 ];
+
+export const UserUpdatesValidation = [
+  body([
+    "walletAddress",
+    "phoneNumber",
+    "bankAccountNumber",
+    "bankName",
+    "fullName",
+  ]).optional(),
+];

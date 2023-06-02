@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { ChangePassword, me } from "../../controllers/user";
+import { ChangePassword, UpdateUser, me } from "../../controllers/user";
 import { verifyToken } from "../../middleWares/auth.middleware";
 import {
   RequestWithdrawal,
@@ -14,11 +14,17 @@ import {
   RequestWithdrawalVerification,
 } from "../../middleWares/validations/packages";
 import { pagination } from "../../middleWares/validations";
-import { ChangePasswordValidation } from "../../middleWares/validations/auth";
+import {
+  ChangePasswordValidation,
+  UserUpdatesValidation,
+} from "../../middleWares/validations/auth";
 
 const users = Router();
 
-users.route("/me").get(verifyToken, me);
+users
+  .route("/me")
+  .get(verifyToken, me)
+  .patch(verifyToken, UserUpdatesValidation, UpdateUser);
 users
   .route("/packages")
   .post(verifyToken, couponValidity, newInvestment)
@@ -36,4 +42,5 @@ users.get("/withdrawal-requests", verifyToken, pagination, getUserRequests);
 users
   .route("/update-password")
   .patch(verifyToken, ChangePasswordValidation, ChangePassword);
+
 export default users;
