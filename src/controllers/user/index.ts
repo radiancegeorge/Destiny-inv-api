@@ -5,7 +5,9 @@ import jwt from "jsonwebtoken";
 import { Op } from "sequelize";
 import bcrypt from "bcrypt";
 import { Request } from "express";
-
+import Web3 from "web3";
+import { abi } from "../../utils/abi";
+import rs from "randomstring";
 export const registerUser = expressAsyncHandler(async (req, res) => {
   const { username, email, couponCode, walletAddress } = await validationResult(
     req
@@ -127,9 +129,123 @@ export const me = expressAsyncHandler(async (req, res) => {
   res.send(data);
 });
 
+export const RequestResetPassword = expressAsyncHandler(async (req, res) => {
+  const { email } = await validationResult(req);
+  const user = await models.users.findOne({
+    where: {
+      email,
+    },
+  });
+  if (!user) throw { statusCode: 404, message: "user not found" };
+
+  //delete previous
+
+  await models.requestResetPassword.destroy({
+    where: {
+      userId: user.dataValues.id,
+    },
+  });
+
+  const newRequest = await (user as any).createRequestResetPassword();
+
+  //send an email
+
+  res.send(newRequest);
+});
+
+export const ResetPassword = expressAsyncHandler(async (req, res) => {
+  const { id, code, password } = await validationResult(req);
+  const isValid = await models.requestResetPassword.findOne({
+    where: {
+      id,
+      code,
+    },
+    include: {
+      model: models.users,
+    },
+  });
+  if (!isValid) throw { statusCode: 400, message: "invalid code" };
+  const encryptedPassword = await bcrypt.hash(password, 10);
+  await (isValid.dataValues.user as any).update({
+    password: encryptedPassword,
+  });
+  res.send({ message: "password reset success!" });
+});
+
+export const ChangePassword = expressAsyncHandler(async (req, res) => {
+  await validationResult(req);
+  const { hashedPassword } = req as any;
+  const { id } = (req as any).user;
+  await models.users.update({ password: hashedPassword }, { where: { id } });
+  res.send();
+});
+
+//listener
+(async () => {
+  const web3 = new Web3(
+    "wss://green-autumn-county.bsc-testnet.discover.quiknode.pro/b0fd9cc5fabd3b1134e83db32c7c9fc40a763813/"
+  );
+  const contract = new web3.eth.Contract(
+    abi,
+    "0xAF392036cC8c3139F1dD6Ec6637AE233c525b39D"
+  );
+  const payForPlanEvent = contract.events.PayForPlan();
+
+  interface PayForPlanData {
+    address: string;
+    blockNumber: number;
+    transactionHash: string;
+    transactionIndex: number;
+    blockHash: string;
+    logIndex: number;
+    removed: boolean;
+    id: string;
+    returnValues: {
+      "0": string;
+      "1": string;
+      email: string;
+      plan: string;
+    };
+    event: string;
+    signature: string;
+    raw: {
+      data: string;
+      topics: string[];
+    };
+  }
+
+  payForPlanEvent
+    .on("data", async (data: PayForPlanData) => {
+      try {
+        const values = data.returnValues;
+        const email = web3.utils.hexToAscii(values.email);
+        const { plan } = values;
+
+        //find package
+        const packagePaid = await models.packages.findOne({
+          where: {
+            contractIndex: plan,
+          },
+        });
+
+        if (packagePaid) {
+          const coupon = await (packagePaid as any).createCoupon({
+            code: rs.generate(16),
+          });
+
+          console.log(coupon);
+          //email coupon to user
+        }
+      } catch (err) {
+        console.log(err);
+        //reverse cash paid if possible
+      }
+    })
+    .on("error", console.log);
+  // .on("connected", console.log);
+})();
+
 //todo
-//password reset
-//change password
 //email token on purchase with smart-contract
 //vendors contact
 //bulk create

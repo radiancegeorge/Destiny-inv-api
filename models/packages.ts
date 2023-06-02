@@ -6,6 +6,7 @@ interface PackagesAttributes {
   investmentAmount: number;
   returnAfterMaturity: number;
   maturityPeriodInDays: number;
+  contractIndex: number;
 }
 
 const packages = (sequelize: Sequelize, datatypes: typeof DataTypes) => {
@@ -20,12 +21,14 @@ const packages = (sequelize: Sequelize, datatypes: typeof DataTypes) => {
           unique: false,
         },
       });
+      packages.hasMany(models.coupons);
     };
     id!: string;
     name!: string;
     investmentAmount!: number;
     returnAfterMaturity!: number;
     maturityPeriodInDays!: number;
+    contractIndex!: number;
   }
 
   packages.init(
@@ -52,6 +55,9 @@ const packages = (sequelize: Sequelize, datatypes: typeof DataTypes) => {
         type: datatypes.INTEGER,
         allowNull: false,
         defaultValue: 14,
+      },
+      contractIndex: {
+        type: datatypes.INTEGER,
       },
     },
     { sequelize, tableName: "packages" }

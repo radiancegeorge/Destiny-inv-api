@@ -6,6 +6,10 @@ interface UsersAttributes {
   email: string;
   password: string;
   walletAddress: string;
+  phoneNumber: string;
+  bankAccountNumber: string;
+  bankName: string;
+  fullName: string;
 }
 
 const users = (sequelize: Sequelize, datatypes: typeof DataTypes) => {
@@ -14,12 +18,17 @@ const users = (sequelize: Sequelize, datatypes: typeof DataTypes) => {
       users.belongsToMany(models.packages, {
         through: { model: models.userPackages, unique: false },
       });
+      users.hasOne(models.requestResetPassword);
     };
     id!: string;
     username!: string;
     email!: string;
     password!: string;
     walletAddress!: string;
+    bankAccountNumber!: string;
+    phoneNumber!: string;
+    bankName!: string;
+    fullName!: string;
   }
 
   users.init(
@@ -47,6 +56,18 @@ const users = (sequelize: Sequelize, datatypes: typeof DataTypes) => {
         type: datatypes.STRING,
         allowNull: true,
         unique: "walletAddress",
+      },
+      phoneNumber: {
+        type: datatypes.STRING,
+      },
+      bankAccountNumber: {
+        type: datatypes.STRING,
+      },
+      fullName: {
+        type: datatypes.STRING,
+      },
+      bankName: {
+        type: datatypes.STRING,
       },
     },
     {

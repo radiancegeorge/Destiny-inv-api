@@ -1,4 +1,4 @@
-import { body } from "express-validator";
+import { body, param } from "express-validator";
 import { models } from "../../../models";
 import Web3 from "web3";
 import bcrypt from "bcrypt";
@@ -42,14 +42,14 @@ export const LoginValidation = [
 ];
 
 export const ResetPasswordValidation = [
-  body("email").isEmail().withMessage("Must be a valid email"),
+  param(["code", "id"]).notEmpty().withMessage("cannot be empty"),
+  body("password").trim().notEmpty().withMessage("password cannot be empty"),
 ];
 
 export const ChangePasswordValidation = [
   body("oldPassword")
     .notEmpty({ ignore_whitespace: true })
     .custom(async (value, { req }) => {
-      // Assuming you have a function getUserByEmail to retrieve the user
       const user = await models.users.findOne({
         where: { email: req.user.email },
       });
@@ -60,11 +60,20 @@ export const ChangePasswordValidation = [
       if (!passwordMatch) {
         throw new Error("Old password does not match");
       }
+
       return true;
     })
     .withMessage("Old Password is incorrect"),
   body("newPassword")
     .notEmpty({ ignore_whitespace: true })
     .isLength({ min: 8 })
+    .custom((value, { req }) => {
+      req.hashedPassword = bcrypt.hashSync(value, 10);
+      return true;
+    })
     .withMessage("New Password must be at least 8 characters long"),
+];
+
+export const RequestResetPasswordValidation = [
+  param("email").isEmail().withMessage("please provide a valid email"),
 ];
