@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: capital-cove-be
+  namespace: staging
+spec:
+  selector:
+    matchLabels:
+      app: capital-cove-be
+  template:
+    metadata:
+      labels:
+        app: capital-cove-be
+    spec:
+      containers:
+        - name: capital-cove-be
+          image: <Image>
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          envFrom:
+            - secretRef:
+                name: capital-cove
+          ports:
+            - containerPort: 80

@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: capital-cove-staging
+  namespace: staging
+  labels:
+    name: capital-cove-staging
+  annotations:
+    cert-manager.io/cluster-issuer: cert-manager
+spec:
+  tls:
+    - hosts:
+        - "staging-api.capitalcove.com.ng"
+      secretName: staging-api-tls
+  rules:
+    - host: staging-api.capitalcove.com.ng
+      http:
+        paths:
+          - pathType: Prefix
+            path: "/"
+            backend:
+              service:
+                name: capital-cove
+                port:
+                  number: 80
