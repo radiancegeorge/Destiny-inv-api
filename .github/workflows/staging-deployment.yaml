@@ -28,7 +28,7 @@ jobs:
         run: doctl kubernetes cluster config save backend
       - name: update deployment file
         run: |
-          cat ./k8s/staging/deployment.yaml | sed -i "s/<Image>/radianceobi\/capital-cove-api:${{ github.sha }}/" - | kubectl apply -f -
+          cat ./k8s/staging/deployment.yaml | sed "s/<Image>/radianceobi\/capital-cove-api:${{ github.sha }}/" - | kubectl apply -f -
       - name: Apply other configs
         run: kubectl apply ./k8s/staging/others
       - name: Check rollout status
