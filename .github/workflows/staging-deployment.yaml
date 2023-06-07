@@ -1,0 +1,35 @@
+name: Deploy Staging API
+on:
+  push:
+    branches:
+      - "main"
+jobs:
+  build-push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Log into docker
+        uses: docker/login-action@v2
+        with:
+          username: radianceobi
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build  and push docker image
+        run: docker build -t radianceobi/capital-cove-api:${{ github.sha }} . && docker push radianceobi/capital-cove-api:${{ github.sha }}
+  apply-api-config:
+    runs-on: ubuntu-latest
+    needs: build-push
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+      - name: add kubernetes to config
+        run: doctl kubernetes cluster config save backend
+      - name: update deployment file
+        run: |
+          cat ./k8s/staging/deployment.yaml | sed "s/<Image>/radianceobi/capital-cove-api:${{ github.sha }}/" | kubectl apply -f -
+      - name: Apply other configs
+        run: kubectl apply ./k8s/staging/others
+      - name: Check rollout status
+        run: kubectl rollout status deployment/capital-cove-be -n staging

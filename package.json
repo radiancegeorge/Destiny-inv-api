@@ -34,7 +34,8 @@
     "web3": "^1.10.0"
   },
   "scripts": {
-    "dev": "nodemon -r dotenv/config server.ts"
+    "dev": "nodemon -r dotenv/config server.ts",
+    "staging": "ts-node -r dotenv/config server.ts"
   },
   "devDependencies": {
     "ts-node": "^10.9.1"
