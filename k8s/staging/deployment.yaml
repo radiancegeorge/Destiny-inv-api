@@ -23,5 +23,5 @@ spec:
             - secretRef:
                 name: capital-cove
           ports:
-            - containerPort: 80
+            - containerPort: 4000
           command: ["yarn", "staging"]
