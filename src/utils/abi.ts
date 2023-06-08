@@ -3,7 +3,7 @@ export const abi: any = [
     anonymous: false,
     inputs: [
       {
-        indexed: false,
+        indexed: true,
         internalType: "bytes32",
         name: "email",
         type: "bytes32",
@@ -17,12 +17,15 @@ export const abi: any = [
     anonymous: false,
     inputs: [
       {
+        components: [
+          { internalType: "uint16", name: "plan", type: "uint16" },
+          { internalType: "address", name: "_address", type: "address" },
+        ],
         indexed: false,
-        internalType: "address",
-        name: "_address",
-        type: "address",
+        internalType: "struct Storage.PayoutProperties[]",
+        name: "_data",
+        type: "tuple[]",
       },
-      { indexed: false, internalType: "uint8", name: "_plan", type: "uint8" },
     ],
     name: "Payout",
     type: "event",
@@ -117,8 +120,15 @@ export const abi: any = [
   },
   {
     inputs: [
-      { internalType: "address", name: "_address", type: "address" },
-      { internalType: "uint8", name: "_plan", type: "uint8" },
+      {
+        components: [
+          { internalType: "uint16", name: "plan", type: "uint16" },
+          { internalType: "address", name: "_address", type: "address" },
+        ],
+        internalType: "struct Storage.PayoutProperties[]",
+        name: "_data",
+        type: "tuple[]",
+      },
     ],
     name: "payout",
     outputs: [],

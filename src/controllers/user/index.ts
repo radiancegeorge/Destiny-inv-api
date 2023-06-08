@@ -8,6 +8,8 @@ import { Request } from "express";
 import Web3 from "web3";
 import { abi } from "../../utils/abi";
 import rs from "randomstring";
+import sendMail from "../../utils/sendMail";
+import couponTemplate from "../../templates/coupon";
 export const registerUser = expressAsyncHandler(async (req, res) => {
   const { username, email, couponCode, walletAddress } = await validationResult(
     req
@@ -208,7 +210,7 @@ export const UpdateUser = expressAsyncHandler(async (req, res) => {
   );
   const contract = new web3.eth.Contract(
     abi,
-    "0xAF392036cC8c3139F1dD6Ec6637AE233c525b39D"
+    "0x852D2D737a24c1715FcA3ac3c3cC206AbE8C0224"
   );
   const payForPlanEvent = contract.events.PayForPlan();
 
@@ -265,6 +267,12 @@ export const UpdateUser = expressAsyncHandler(async (req, res) => {
     .on("error", console.log);
   // .on("connected", console.log);
 })();
+// sendMail({
+//   sender: { name: "coupon", email: "coupon@capitalcove.com.ng" },
+//   htmlContent: couponTemplate(),
+//   subject: "New Coupon",
+//   to: [{ email: "radiancegeorge@gmail.com" }],
+// }).catch(console.log);
 
 //todo
 //payout with smart contract

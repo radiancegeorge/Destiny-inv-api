@@ -63,20 +63,21 @@ const initDashboard = async (app: any) => {
       models.userPackages,
       models.transactions,
       models.withdrawalRequests,
+      models.vendors,
     ],
     componentLoader,
-    // locale: {
-    //   translations: {
-    //     en: {
-    //       components: {
-    //         Login: {
-    //           welcomeHeader: "Welcome",
-    //           welcomeMessage: "Proceed with your email and Password",
-    //         },
-    //       },
-    //     },
-    //   },
-    // },
+    locale: {
+      translations: {
+        en: {
+          components: {
+            Login: {
+              welcomeHeader: "Welcome",
+              welcomeMessage: "Proceed with your email and Password",
+            },
+          },
+        },
+      },
+    } as any,
     branding: {
       companyName: "Investments",
 
