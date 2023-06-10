@@ -265,7 +265,12 @@ export const UpdateUser = expressAsyncHandler(async (req, res) => {
       }
     })
     .on("error", console.log);
-  // .on("connected", console.log);
+
+  const payoutEvent = contract.events.Payout();
+  payoutEvent.on("data", async (data: any) => {
+    //handle data
+    console.log(data);
+  });
 })();
 // sendMail({
 //   sender: { name: "coupon", email: "coupon@capitalcove.com.ng" },

@@ -1,4 +1,6 @@
+// @ts-nocheck
 import db, { models } from "../../models";
+import markApproved from "./customActions/bulkMarkApprove";
 import users from "./customResources/users";
 const initDashboard = async (app: any) => {
   const { default: AdminJS, ComponentLoader } = await import("adminjs");
@@ -32,26 +34,10 @@ const initDashboard = async (app: any) => {
   });
   const Components = {
     couponBtn: componentLoader.add("couponBtn", "./components/couponCode.jsx"),
-  };
-  const coupons = {
-    resource: models.coupons,
-    options: {
-      properties: {
-        code: {
-          isVisible: { list: true, show: true, edit: false },
-          components: { show: Components.couponBtn },
-        },
-        isRedeemed: {
-          isVisible: { list: true, show: true, edit: false },
-        },
-        updatedAt: { isVisible: false },
-      },
-      actions: {
-        show: {
-          // isVisible: false,
-        },
-      },
-    },
+    approveModal: componentLoader.add(
+      "approveModal",
+      "./components/BulkApproveModal.jsx"
+    ),
   };
 
   const admin = new AdminJS({
@@ -59,10 +45,39 @@ const initDashboard = async (app: any) => {
     resources: [
       users,
       models.packages,
-      coupons,
+      {
+        resource: models.coupons,
+        options: {
+          properties: {
+            code: {
+              isVisible: { list: true, show: true, edit: false },
+              components: { show: Components.couponBtn },
+            },
+            isRedeemed: {
+              isVisible: { list: true, show: true, edit: false },
+            },
+            updatedAt: { isVisible: false },
+          },
+          actions: {
+            show: {
+              // isVisible: false,
+            },
+          },
+        },
+      },
       models.userPackages,
       models.transactions,
-      models.withdrawalRequests,
+      {
+        resource: models.withdrawalRequests,
+        options: {
+          actions: {
+            bulkApprove: {
+              ...markApproved,
+              component: Components.approveModal,
+            },
+          },
+        },
+      },
       models.vendors,
     ],
     componentLoader,
