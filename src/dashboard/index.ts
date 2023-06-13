@@ -1,6 +1,7 @@
 // @ts-nocheck
 import db, { models } from "../../models";
 import markApproved from "./customActions/bulkMarkApprove";
+import BulkPay from "./customActions/bulkPay";
 import users from "./customResources/users";
 const initDashboard = async (app: any) => {
   const { default: AdminJS, ComponentLoader } = await import("adminjs");
@@ -38,6 +39,7 @@ const initDashboard = async (app: any) => {
       "approveModal",
       "./components/BulkApproveModal.jsx"
     ),
+    bulkPay: componentLoader.add("bulkPay", "./components/BulkPay.jsx"),
   };
 
   const admin = new AdminJS({
@@ -74,6 +76,10 @@ const initDashboard = async (app: any) => {
             bulkApprove: {
               ...markApproved,
               component: Components.approveModal,
+            },
+            bulkPay: {
+              ...BulkPay,
+              component: Components.bulkPay,
             },
           },
         },

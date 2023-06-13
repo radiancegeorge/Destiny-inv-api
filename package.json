@@ -38,14 +38,17 @@
     "prop-types": "^15.8.1",
     "randomstring": "^1.2.3",
     "react": "^18.2.0",
+    "react-icons": "^4.9.0",
+    "react-router-dom": "^6.12.1",
     "react-script-tag": "^1.1.2",
     "sequelize": "^6.31.1",
+    "styled-components": "^6.0.0-rc.3",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.0.4",
     "web3": "^1.10.0"
   },
   "scripts": {
-    "dev": "nodemon -r dotenv/config server.ts",
+    "dev": " nodemon -r dotenv/config server.ts --max-old-space-size=4096",
     "staging": "ts-node -r dotenv/config server.ts"
   },
   "devDependencies": {

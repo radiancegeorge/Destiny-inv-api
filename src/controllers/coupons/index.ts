@@ -1,5 +1,6 @@
 import { body } from "express-validator";
 import { models } from "../../../models";
+import expressAsyncHandler from "express-async-handler";
 
 export const couponValidity = [
   body("couponCode").custom(async (code) => {
@@ -14,3 +15,8 @@ export const couponValidity = [
     return true;
   }),
 ];
+
+export const getVendors = expressAsyncHandler(async (req, res) => {
+  const vendors = await models.vendors.findAll();
+  res.send(vendors);
+});

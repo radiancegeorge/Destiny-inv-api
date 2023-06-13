@@ -1,6 +1,7 @@
 import expressAsyncHandler from "express-async-handler";
 import validationResult from "../../middleWares/validatedData.middleware";
 import db, { models } from "../../../models";
+import { Op } from "sequelize";
 
 export const getPackages = expressAsyncHandler(async (req, res) => {
   const { limit, page } = await validationResult(req);
@@ -178,6 +179,7 @@ export const RequestWithdrawal = expressAsyncHandler(async (req, res) => {
   const transaction = await models.transactions.findOne({
     where: {
       userPackageId,
+      transactionType: "investment",
     },
     include: [
       {
@@ -194,7 +196,16 @@ export const RequestWithdrawal = expressAsyncHandler(async (req, res) => {
     transactionMaturityDate.getDate() +
       transaction?.dataValues.package.maturityPeriodInDays
   );
-
+  const hasPendingTransaction = await models.withdrawalRequests.findOne({
+    where: {
+      userId: id,
+      status: {
+        [Op.notLike]: "%processed%",
+      },
+    },
+  });
+  if (hasPendingTransaction)
+    throw { status: 400, message: "You have a pending withdrawal request!" };
   if (!userPackage)
     throw {
       statusCode: 404,
@@ -227,6 +238,17 @@ export const RequestWithdrawal = expressAsyncHandler(async (req, res) => {
       { transaction: t }
     );
     await userPackage.update({ status: "withdrawn" }, { transaction: t });
+    console.log(transaction);
+    await models.transactions.create(
+      {
+        ...transaction?.dataValues,
+        transactionType: "withdrawal",
+        id: undefined,
+        updatedAt: undefined,
+        createdAt: undefined,
+      },
+      { transaction: t }
+    );
     res.send(newRequest);
     await t.commit();
   } catch (err) {

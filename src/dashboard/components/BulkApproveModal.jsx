@@ -10,7 +10,7 @@ import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 import Typography from "@mui/material/Typography";
 import { ApiClient } from "adminjs";
-
+import { useNavigate } from "react-router-dom";
 const BootstrapDialog = styled(Dialog)(({ theme }) => ({
   "& .MuiDialogContent-root": {
     padding: theme.spacing(2),
@@ -49,10 +49,10 @@ BootstrapDialogTitle.propTypes = {
 
 export default function Approve({ action, ...props }) {
   const [open, setOpen] = React.useState(true);
-
+  const navigate = useNavigate();
   const apiClient = React.useMemo(() => new ApiClient());
   const handleClose = () => {
-    window.location.href = props.resource.href;
+    navigate(-1);
   };
 
   //   console.log(props);
@@ -66,7 +66,7 @@ export default function Approve({ action, ...props }) {
       },
     });
 
-    handleClose();
+    window.location.href = props.resource.href;
   };
   return (
     <div>
@@ -81,7 +81,7 @@ export default function Approve({ action, ...props }) {
         </BootstrapDialogTitle>
         <DialogContent dividers>
           <Typography gutterBottom>
-            Are you sure u want to Approve 1 request(s)
+            Are you sure u want to Approve {props.records.length} request(s)
           </Typography>
         </DialogContent>
         <DialogActions>

@@ -11,8 +11,8 @@ const markApproved = {
   //   icon: "Publish",
   label: "Approve",
   isBulk: true,
-  showInDrawer: true,
-  // hideActionHeader: true,
+  // showInDrawer: true,
+  hideActionHeader: true,
   // guard: "Approve Request(s)?",
   handler: async (
     request: ActionRequest,
@@ -29,8 +29,6 @@ const markApproved = {
         records: recordsInJSON,
       };
     }
-    console.log("updating...");
-    console.log(request.query, "what we have in params");
     await Promise.all(
       request.query.ids.map(async (recordId) => {
         const record = await resource.findOne(recordId);

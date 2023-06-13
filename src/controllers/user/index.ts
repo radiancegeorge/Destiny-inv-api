@@ -10,6 +10,8 @@ import { abi } from "../../utils/abi";
 import rs from "randomstring";
 import sendMail from "../../utils/sendMail";
 import couponTemplate from "../../templates/coupon";
+import { PayForPlanData, PayoutLog } from "./contractlogs";
+
 export const registerUser = expressAsyncHandler(async (req, res) => {
   const { username, email, couponCode, walletAddress } = await validationResult(
     req
@@ -214,29 +216,6 @@ export const UpdateUser = expressAsyncHandler(async (req, res) => {
   );
   const payForPlanEvent = contract.events.PayForPlan();
 
-  interface PayForPlanData {
-    address: string;
-    blockNumber: number;
-    transactionHash: string;
-    transactionIndex: number;
-    blockHash: string;
-    logIndex: number;
-    removed: boolean;
-    id: string;
-    returnValues: {
-      "0": string;
-      "1": string;
-      email: string;
-      plan: string;
-    };
-    event: string;
-    signature: string;
-    raw: {
-      data: string;
-      topics: string[];
-    };
-  }
-
   payForPlanEvent
     .on("data", async (data: PayForPlanData) => {
       try {
@@ -267,11 +246,28 @@ export const UpdateUser = expressAsyncHandler(async (req, res) => {
     .on("error", console.log);
 
   const payoutEvent = contract.events.Payout();
-  payoutEvent.on("data", async (data: any) => {
-    //handle data
-    console.log(data);
+  payoutEvent.on("data", async (data: PayoutLog) => {
+    await Promise.all(
+      data.returnValues._data.map(async (res) => {
+        const user = await models.users.findOne({
+          where: {
+            walletAddress: res._address,
+          },
+        });
+        await models.withdrawalRequests.update(
+          { status: "processed", paymentMethod: "usdt" },
+
+          {
+            where: {
+              userId: user?.dataValues.id,
+            },
+          }
+        );
+      })
+    );
   });
 })();
+
 // sendMail({
 //   sender: { name: "coupon", email: "coupon@capitalcove.com.ng" },
 //   htmlContent: couponTemplate(),
