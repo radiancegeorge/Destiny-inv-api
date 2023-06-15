@@ -17,8 +17,8 @@ spec:
           image: <Image>
           resources:
             limits:
-              memory: "512Mi"
-              cpu: "500m"
+              memory: "1Gi"
+              cpu: "1"
           envFrom:
             - secretRef:
                 name: capital-cove
