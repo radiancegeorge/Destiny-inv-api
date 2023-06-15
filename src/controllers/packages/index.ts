@@ -120,6 +120,20 @@ export const renewInvestment = expressAsyncHandler(async (req, res) => {
         model: models.packages,
       },
     });
+
+    //check if user packages last updated has reached allowed maturity date by package
+    const expectedMatureDate = new Date(userPackage?.dataValues.updatedAt);
+    const today = new Date();
+    expectedMatureDate.setDate(
+      today.getDate() +
+        (userPackage?.dataValues as any).package.maturityPeriodInDays
+    );
+    if (today < expectedMatureDate)
+      throw {
+        statusCode: 403,
+        message:
+          "Package cannot be renewed until " + expectedMatureDate.toUTCString(),
+      };
     //check if package has a renewed status and disallow
     if (userPackage?.dataValues.status === "renewed")
       throw { statusCode: 403, message: "Package was recently renewed!" };

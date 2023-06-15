@@ -35,7 +35,7 @@ users
 
 users
   .route("/packages/:userPackageId/request-withdrawal")
-  .get(verifyToken, RequestWithdrawalVerification, RequestWithdrawal);
+  .post(verifyToken, RequestWithdrawalVerification, RequestWithdrawal);
 
 users.get("/withdrawal-requests", verifyToken, pagination, getUserRequests);
 

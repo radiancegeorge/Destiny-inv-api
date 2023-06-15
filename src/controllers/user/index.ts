@@ -221,6 +221,7 @@ export const UpdateUser = expressAsyncHandler(async (req, res) => {
       try {
         const values = data.returnValues;
         const email = web3.utils.hexToAscii(values.email);
+        console.log(email);
         const { plan } = values;
 
         //find package
@@ -243,6 +244,7 @@ export const UpdateUser = expressAsyncHandler(async (req, res) => {
         //reverse cash paid if possible
       }
     })
+    .on("connect", (e: any) => console.log(e, "connected"))
     .on("error", console.log);
 
   const payoutEvent = contract.events.Payout();

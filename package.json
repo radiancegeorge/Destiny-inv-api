@@ -48,7 +48,7 @@
     "web3": "^1.10.0"
   },
   "scripts": {
-    "dev": " nodemon -r dotenv/config server.ts --max-old-space-size=4096",
+    "dev": " nodemon -r dotenv/config server.ts",
     "staging": "ts-node -r dotenv/config server.ts"
   },
   "devDependencies": {
