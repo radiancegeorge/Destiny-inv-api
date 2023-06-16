@@ -29,10 +29,10 @@ const initDashboard = async (app: any) => {
   // };
 
   const Bundle = bundle.bundle as any;
-  await Bundle({
-    destinationDir: "../../.adminjs/",
-    customComponentsInitializationFilePath: "./components",
-  });
+  // await Bundle({
+  //   destinationDir: "../../.adminjs/",
+  //   customComponentsInitializationFilePath: "./components",
+  // });
   const Components = {
     couponBtn: componentLoader.add("couponBtn", "./components/couponCode.jsx"),
     approveModal: componentLoader.add(
